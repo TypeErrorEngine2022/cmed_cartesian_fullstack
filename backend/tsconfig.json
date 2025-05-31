@@ -5,8 +5,11 @@
     "rootDir": "./src",
     "outDir": "./dist",
     "strict": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "strictPropertyInitialization": false,
     "forceConsistentCasingInFileNames": true
   },
   "include": ["src/**/*"],
