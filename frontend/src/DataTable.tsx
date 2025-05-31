@@ -10,7 +10,6 @@ interface DataTableProps {
 export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
   const [newColumnName, setNewColumnName] = useState("");
   const [newRowName, setNewRowName] = useState("");
-  const [newRowAnnotation, setNewRowAnnotation] = useState("");
   const [editCellInfo, setEditCellInfo] = useState<{
     rowName: string;
     columnName: string;
@@ -35,9 +34,8 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
   const handleAddRow = async () => {
     if (!newRowName.trim()) return;
     try {
-      await api.addRow(newRowName, newRowAnnotation);
+      await api.addRow(newRowName);
       setNewRowName("");
-      setNewRowAnnotation("");
       onDataChange();
     } catch (error) {
       console.error("Error adding row:", error);
@@ -119,13 +117,6 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
             onChange={(e) => setNewRowName(e.target.value)}
             placeholder="New row name"
             className="p-2 border rounded w-full mb-2"
-          />
-          <input
-            type="text"
-            value={newRowAnnotation}
-            onChange={(e) => setNewRowAnnotation(e.target.value)}
-            placeholder="Annotation (optional)"
-            className="p-2 border rounded w-full"
           />
         </div>
         <button

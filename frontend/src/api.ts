@@ -13,8 +13,8 @@ export const api = {
     await axios.post(`${API_URL}/column`, { column_name });
   },
 
-  addRow: async (name: string, annotation: string): Promise<void> => {
-    await axios.post(`${API_URL}/add_row`, { name, annotation });
+  addRow: async (name: string): Promise<void> => {
+    await axios.post(`${API_URL}/row`, { name });
   },
 
   updateCell: async (

@@ -80,9 +80,9 @@ app.post("/column", async (req: Request, res: Response) => {
   res.json({ message: "Criteria added" });
 });
 
-// POST /add_row: Add a new row
-app.post("/add_row", async (req: Request, res: Response) => {
-  const { name, annotation } = req.body;
+// POST /row: Add a new row
+app.post("/row", async (req: Request, res: Response) => {
+  const { name } = req.body;
   if (!name) return res.status(400).json({ error: "Formula name required" });
 
   const criteriaRepository = AppDataSource.getRepository(Criteria);
@@ -91,7 +91,6 @@ app.post("/add_row", async (req: Request, res: Response) => {
 
   const row = new Formula();
   row.name = name;
-  row.annotation = annotation || "";
   await formulaRepository.save(row);
 
   const columns = await criteriaRepository.find();
