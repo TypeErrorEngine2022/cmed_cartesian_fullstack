@@ -139,3 +139,19 @@ app.put("/cell", async (req: Request, res: Response) => {
     res.json({ message: "Cell created and updated" });
   }
 });
+
+// PUT /annotation: Update a row's annotation
+app.put("/annotation", async (req: Request, res: Response) => {
+  const { row_id, annotation } = req.body;
+
+  const formulaRepository = AppDataSource.getRepository(Formula);
+
+  const row = await formulaRepository.findOne({ where: { name: row_id } });
+
+  if (!row) return res.status(404).json({ error: "Row not found" });
+
+  row.annotation = annotation;
+  await formulaRepository.save(row);
+
+  res.json({ message: "Annotation updated" });
+});

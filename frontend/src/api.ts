@@ -24,4 +24,11 @@ export const api = {
   ): Promise<void> => {
     await axios.put(`${API_URL}/cell`, { row_id, column_name, value });
   },
+
+  updateAnnotation: async (
+    row_id: string,
+    annotation: string
+  ): Promise<void> => {
+    await axios.put(`${API_URL}/annotation`, { row_id, annotation });
+  },
 };

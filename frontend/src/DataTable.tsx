@@ -16,6 +16,10 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
     columnName: string;
     value: string;
   } | null>(null);
+  const [editAnnotationInfo, setEditAnnotationInfo] = useState<{
+    rowName: string;
+    value: string;
+  } | null>(null);
 
   const handleAddColumn = async () => {
     if (!newColumnName.trim()) return;
@@ -46,6 +50,7 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
     value: string
   ) => {
     setEditCellInfo({ rowName, columnName, value });
+    setEditAnnotationInfo(null); // Close any open annotation editor
   };
 
   const handleCellUpdate = async () => {
@@ -61,6 +66,26 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
       onDataChange();
     } catch (error) {
       console.error("Error updating cell:", error);
+    }
+  };
+
+  const handleAnnotationClick = (rowName: string, value: string) => {
+    setEditAnnotationInfo({ rowName, value });
+    setEditCellInfo(null); // Close any open cell editor
+  };
+
+  const handleAnnotationUpdate = async () => {
+    if (!editAnnotationInfo) return;
+
+    try {
+      await api.updateAnnotation(
+        editAnnotationInfo.rowName,
+        editAnnotationInfo.value
+      );
+      setEditAnnotationInfo(null);
+      onDataChange();
+    } catch (error) {
+      console.error("Error updating annotation:", error);
     }
   };
 
@@ -125,7 +150,36 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
           {data.rows.map((row) => (
             <tr key={row.name}>
               <td>{row.name}</td>
-              <td>{row.annotation}</td>
+              <td
+                onClick={() => handleAnnotationClick(row.name, row.annotation)}
+                className="cursor-pointer"
+              >
+                {editAnnotationInfo &&
+                editAnnotationInfo.rowName === row.name ? (
+                  <div className="flex">
+                    <input
+                      type="text"
+                      value={editAnnotationInfo.value}
+                      onChange={(e) =>
+                        setEditAnnotationInfo({
+                          ...editAnnotationInfo,
+                          value: e.target.value,
+                        })
+                      }
+                      autoFocus
+                      className="p-1 border rounded flex-1"
+                      onBlur={handleAnnotationUpdate}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          handleAnnotationUpdate();
+                        }
+                      }}
+                    />
+                  </div>
+                ) : (
+                  row.annotation || "—"
+                )}
+              </td>
               {data.columns.map((column) => (
                 <td
                   key={`${row.name}-${column}`}
