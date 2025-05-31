@@ -155,22 +155,20 @@ export const CartesianPlot: React.FC<CartesianPlotProps> = ({
             <LabelList
               dataKey="annotation"
               content={(props) => {
-                // Only show the label if the annotation is short (less than 15 characters)
-                const { value, cx, cy } = props;
-                if (value && value.toString().length < 15) {
-                  return (
-                    <text
-                      x={typeof cx === "number" ? cx + 5 : 5}
-                      y={cy}
-                      textAnchor="start"
-                      fill="#333"
-                      fontSize={10}
-                    >
-                      {value}
-                    </text>
-                  );
-                }
-                return null;
+                const { name, value, cx, cy } = props;
+                const annotation = value || "";
+                return (
+                  <text
+                    x={typeof cx === "number" ? cx + 5 : 5}
+                    y={cy}
+                    textAnchor="start"
+                    fill="#333"
+                    fontSize={10}
+                  >
+                    {name}:{" "}
+                    {annotation.toString().length <= 5 ? annotation : ""}
+                  </text>
+                );
               }}
             />
           </Scatter>
