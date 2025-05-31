@@ -14,7 +14,7 @@ yarn-error.log*
 # Build outputs
 /server/dist
 /build
-/dist
+*/dist
 /.next
 
 # IDE and Editor files
