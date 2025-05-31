@@ -94,7 +94,9 @@ function App() {
             />
 
             {tableData.columns.length >= 4 && (
-              <CartesianPlot data={tableData} settings={plotSettings} />
+              <div className="mb-24">
+                <CartesianPlot data={tableData} settings={plotSettings} />
+              </div>
             )}
           </div>
         </div>

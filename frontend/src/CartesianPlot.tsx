@@ -6,7 +6,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   Label,
   LabelList,
@@ -76,21 +75,6 @@ export const CartesianPlot: React.FC<CartesianPlotProps> = ({
     <div className="cartesian-plot-container">
       <h2 className="text-2xl font-bold mb-4">Cartesian Plot</h2>
 
-      <div className="mb-4 p-4 bg-gray-50 rounded">
-        <p>
-          <span className="font-semibold">X+ (Right):</span> {xPositive}
-        </p>
-        <p>
-          <span className="font-semibold">X- (Left):</span> {xNegative}
-        </p>
-        <p>
-          <span className="font-semibold">Y+ (Up):</span> {yPositive}
-        </p>
-        <p>
-          <span className="font-semibold">Y- (Down):</span> {yNegative}
-        </p>
-      </div>
-
       <ResponsiveContainer width="100%" height={500}>
         <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
           <CartesianGrid />
@@ -118,7 +102,6 @@ export const CartesianPlot: React.FC<CartesianPlotProps> = ({
             />
           </YAxis>
           <Tooltip content={<CustomTooltip />} />
-          <Legend />
           <Scatter
             name="Data Points"
             data={chartData}
