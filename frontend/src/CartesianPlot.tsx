@@ -16,6 +16,7 @@ import { TableData, CartesianSettings, Row, CartesianPoint } from "./types";
 interface CartesianPlotProps {
   data: TableData;
   settings: CartesianSettings;
+  fullScreen?: boolean;
 }
 
 interface CustomTooltipProps {
@@ -50,6 +51,7 @@ const isValidNumber = (value: string): boolean => {
 export const CartesianPlot: React.FC<CartesianPlotProps> = ({
   data,
   settings,
+  fullScreen = false,
 }) => {
   const [invalidPoints, setInvalidPoints] = useState<Row[]>([]);
   const { xPositive, xNegative, yPositive, yNegative } = settings;
@@ -130,8 +132,10 @@ export const CartesianPlot: React.FC<CartesianPlotProps> = ({
   }, [data, settings]);
 
   return (
-    <div className="cartesian-plot-container m-6">
-      <ResponsiveContainer width="100%" height={500}>
+    <div
+      className={`cartesian-plot-container ${fullScreen ? "h-full" : "m-6"}`}
+    >
+      <ResponsiveContainer width="100%" height={fullScreen ? "90%" : 500}>
         <ScatterChart margin={{ top: 40, right: 50, bottom: 40, left: 50 }}>
           <CartesianGrid strokeDasharray="3 3" />
 
