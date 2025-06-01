@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ScatterChart,
   Scatter,
@@ -11,7 +11,7 @@ import {
   LabelList,
   ReferenceLine,
 } from "recharts";
-import { TableData, CartesianSettings } from "./types";
+import { TableData, CartesianSettings, Row, CartesianPoint } from "./types";
 
 interface CartesianPlotProps {
   data: TableData;
@@ -43,34 +43,58 @@ const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
   return null;
 };
 
+const isValidNumber = (value: string): boolean => {
+  return value !== "NA";
+};
+
 export const CartesianPlot: React.FC<CartesianPlotProps> = ({
   data,
   settings,
 }) => {
+  const [invalidPoints, setInvalidPoints] = useState<Row[]>([]);
   const { xPositive, xNegative, yPositive, yNegative } = settings;
+  const [chartData, setChartData] = useState<CartesianPoint[]>([]);
 
   // Convert table data to plot points
-  const chartData = useMemo(() => {
-    return data.rows.map((row) => {
-      // Calculate X coordinate based on xPositive and xNegative values
-      // We'll use a scale from -10 to 10 for the visualization
-      const xPosValue = parseFloat(row.attributes[xPositive] || "0");
-      const xNegValue = parseFloat(row.attributes[xNegative] || "0");
-      const xCoord = xPosValue - xNegValue;
+  const prepareChartData = () => {
+    const validRows: Row[] = [];
+    const invalidRows: Row[] = [];
+    for (const row of data.rows) {
+      if (
+        !isValidNumber(row.attributes[xPositive]) ||
+        !isValidNumber(row.attributes[xNegative]) ||
+        !isValidNumber(row.attributes[yPositive]) ||
+        !isValidNumber(row.attributes[yNegative])
+      ) {
+        invalidRows.push(row);
+      } else {
+        validRows.push(row);
+      }
+    }
 
-      // Calculate Y coordinate based on yPositive and yNegative values
-      const yPosValue = parseFloat(row.attributes[yPositive] || "0");
-      const yNegValue = parseFloat(row.attributes[yNegative] || "0");
-      const yCoord = yPosValue - yNegValue;
+    setChartData(
+      validRows.map((row) => {
+        // Calculate X coordinate based on xPositive and xNegative values
+        const xPosValue = parseFloat(row.attributes[xPositive] || "0");
+        const xNegValue = parseFloat(row.attributes[xNegative] || "0");
+        const xCoord = xPosValue - xNegValue;
 
-      return {
-        x: xCoord,
-        y: yCoord,
-        name: row.name,
-        annotation: row.annotation,
-      };
-    });
-  }, [data, xPositive, xNegative, yPositive, yNegative]);
+        // Calculate Y coordinate based on yPositive and yNegative values
+        const yPosValue = parseFloat(row.attributes[yPositive] || "0");
+        const yNegValue = parseFloat(row.attributes[yNegative] || "0");
+        const yCoord = yPosValue - yNegValue;
+
+        return {
+          x: xCoord,
+          y: yCoord,
+          name: row.name,
+          annotation: row.annotation,
+        };
+      })
+    );
+
+    setInvalidPoints(invalidRows);
+  };
 
   // Calculate dynamic domains based on data points
   const domains = useMemo(() => {
@@ -92,14 +116,18 @@ export const CartesianPlot: React.FC<CartesianPlotProps> = ({
     const maxY = Math.max(Math.abs(yMin), Math.abs(yMax));
 
     // Add some padding (20%) to the domain for better visualization
-    const xPadding = Math.max(1, (xMax - xMin) * 0.2);
-    const yPadding = Math.max(1, (yMax - yMin) * 0.2);
+    const xPadding = Math.max(1, maxX * 2 * 0.2);
+    const yPadding = Math.max(1, maxY * 2 * 0.2);
 
     return {
       x: [Math.floor(-maxX - xPadding), Math.ceil(maxX + xPadding)],
       y: [Math.floor(-maxY - yPadding), Math.ceil(maxY + yPadding)],
     };
   }, [chartData]);
+
+  useEffect(() => {
+    prepareChartData();
+  }, [data, settings]);
 
   return (
     <div className="cartesian-plot-container m-6">
@@ -184,6 +212,27 @@ export const CartesianPlot: React.FC<CartesianPlotProps> = ({
           </Scatter>
         </ScatterChart>
       </ResponsiveContainer>
+
+      <ul>
+        {invalidPoints.length > 0 && (
+          <li className="text-red-600">
+            <strong>Invalid Points:</strong> Some points could not be plotted
+            due to missing or invalid data.
+          </li>
+        )}
+        {invalidPoints.map((row, index) => (
+          <li key={index}>
+            <span className="font-semibold">{row.name}</span>:{" "}
+            {Object.values([xNegative, xPositive, yNegative, yPositive]).map(
+              (axis) => (
+                <span key={axis}>
+                  {axis}={row.attributes[axis]}{" "}
+                </span>
+              )
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
