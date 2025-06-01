@@ -75,6 +75,25 @@ function App() {
     }
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isDrawerOpen) {
+        setIsDrawerOpen(false);
+        document.body.style.overflow = "auto";
+      }
+    };
+
+    // Add event listener when the drawer is open
+    if (isDrawerOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+
+    // Remove event listener on cleanup
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isDrawerOpen]);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <header className="flex justify-between items-center mb-8">
