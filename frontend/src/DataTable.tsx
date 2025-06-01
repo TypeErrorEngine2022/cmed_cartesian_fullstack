@@ -19,6 +19,10 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
     rowName: string;
     value: string;
   } | null>(null);
+  const [editRowNameInfo, setEditRowNameInfo] = useState<{
+    rowName: string;
+    value: string;
+  } | null>(null);
   const [deleteColumnConfirm, setDeleteColumnConfirm] = useState<string | null>(
     null
   );
@@ -102,6 +106,33 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
       onDataChange();
     } catch (error) {
       console.error("Error updating annotation:", error);
+    }
+  };
+
+  const handleRowNameClick = (rowName: string, value: string) => {
+    setEditRowNameInfo({ rowName, value });
+    setEditCellInfo(null); // Close any open cell editor
+  };
+
+  const handleRowNameUpdate = async () => {
+    if (!editRowNameInfo) return;
+
+    const currentRow = data.rows.find(
+      (row) => row.name === editRowNameInfo.rowName
+    );
+    const currentValue = currentRow?.name || "NA";
+
+    if (editRowNameInfo.value !== currentValue) {
+      try {
+        await api.updateRowName(editRowNameInfo.rowName, editRowNameInfo.value);
+        setEditRowNameInfo(null);
+        onDataChange();
+      } catch (error) {
+        console.error("Error updating row name:", error);
+      }
+    } else {
+      // If the value hasn't changed, just reset the edit state
+      setEditRowNameInfo(null);
     }
   };
 
@@ -381,8 +412,34 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
         <tbody>
           {data.rows.map((row) => (
             <tr key={row.name}>
-              <td className="relative group">
-                {row.name}
+              <td
+                onClick={() => handleRowNameClick(row.name, row.name)}
+                className="relative group cursor-pointer"
+              >
+                {editRowNameInfo && editRowNameInfo.rowName === row.name ? (
+                  <div className="flex">
+                    <input
+                      type="text"
+                      value={editRowNameInfo.value}
+                      onChange={(e) =>
+                        setEditRowNameInfo({
+                          ...editRowNameInfo,
+                          value: e.target.value,
+                        })
+                      }
+                      autoFocus
+                      className="p-1 border rounded flex-1"
+                      onBlur={handleRowNameUpdate}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          handleRowNameUpdate();
+                        }
+                      }}
+                    />
+                  </div>
+                ) : (
+                  row.name || "-"
+                )}
                 <button
                   onClick={() => handleDeleteRowClick(row.name)}
                   className="absolute cursor-pointer  top-0 right-0 text-xs text-red-500 hover:text-red-700 p-1 opacity-0 group-hover:opacity-100 transition-opacity"

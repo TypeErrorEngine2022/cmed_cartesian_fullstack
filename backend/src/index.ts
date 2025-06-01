@@ -251,6 +251,21 @@ app.put("/annotation", async (req: Request, res: Response) => {
   res.json({ message: "Annotation updated" });
 });
 
+// PUT /row/:row_name: Update the row name of a row
+app.put("/row/:row_name/name", async (req: Request, res: Response) => {
+  const { row_name } = req.params;
+  const { new_name } = req.body;
+  if (!new_name) return res.status(400).json({ error: "New name required" });
+  const formulaRepository = AppDataSource.getRepository(Formula);
+  const row = await formulaRepository.findOne({
+    where: { name: row_name },
+  });
+  if (!row) return res.status(404).json({ error: "Row not found" });
+  row.name = new_name;
+  await formulaRepository.save(row);
+  res.json({ message: "Row name updated successfully" });
+});
+
 // DELETE /row/:row_name: Delete a row (formula) and its associated attributes
 app.delete("/row/:row_name", async (req: Request, res: Response) => {
   const { row_name } = req.params;

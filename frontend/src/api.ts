@@ -26,6 +26,10 @@ export const api = {
     await axios.post(`${API_URL}/row`, { name });
   },
 
+  updateRowName: async (old_name: string, new_name: string): Promise<void> => {
+    await axios.put(`${API_URL}/row/${old_name}/name`, { new_name });
+  },
+
   updateCell: async (
     row_id: string,
     column_name: string,
