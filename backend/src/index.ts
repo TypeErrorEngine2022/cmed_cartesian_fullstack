@@ -55,7 +55,7 @@ app.get("/table", async (req: Request, res: Response) => {
   res.json(table);
 });
 
-// POST /add_column: Add a new column
+// POST /column: Add a new column
 app.post("/column", async (req: Request, res: Response) => {
   const { column_name } = req.body;
   if (!column_name)
@@ -104,7 +104,7 @@ app.post("/row", async (req: Request, res: Response) => {
   res.json({ message: "Formula added" });
 });
 
-// PUT /update_cell: Update a cell value
+// PUT /cell: Update a cell value
 app.put("/cell", async (req: Request, res: Response) => {
   const { row_id, column_name, value } = req.body;
 
