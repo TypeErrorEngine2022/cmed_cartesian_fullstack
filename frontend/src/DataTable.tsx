@@ -217,7 +217,30 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
 
   return (
     <div className="overflow-x-auto">
-      <h2 className="text-2xl font-bold mb-4">Data Table</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold mb-4">Data Table</h2>
+        <div className="flex space-x-2">
+          <button
+            onClick={handleExportTable}
+            className="text-sm px-4 py-2 rounded border-solid border-black border-[1px] hover:bg-gray-200"
+          >
+            Export Table
+          </button>
+          <button
+            onClick={handleImportClick}
+            className="text-sm px-4 py-2 rounded border-solid border-black border-[1px] hover:bg-gray-200"
+          >
+            Import Table
+          </button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImportTable}
+            accept=".json"
+            className="hidden"
+          />
+        </div>
+      </div>
 
       {deleteColumnConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
@@ -251,30 +274,6 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
           <p>{importError}</p>
         </div>
       )}
-
-      <div className="flex justify-end items-center mb-4">
-        <div className="flex space-x-2">
-          <button
-            onClick={handleExportTable}
-            className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600"
-          >
-            Export Table
-          </button>
-          <button
-            onClick={handleImportClick}
-            className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600"
-          >
-            Import Table
-          </button>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleImportTable}
-            accept=".json"
-            className="hidden"
-          />
-        </div>
-      </div>
 
       <div className="flex space-x-4 mb-4">
         <div className="flex-1">
