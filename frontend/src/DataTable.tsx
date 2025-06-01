@@ -19,6 +19,9 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
     rowName: string;
     value: string;
   } | null>(null);
+  const [deleteColumnConfirm, setDeleteColumnConfirm] = useState<string | null>(
+    null
+  );
 
   const handleAddColumn = async () => {
     if (!newColumnName.trim()) return;
@@ -87,9 +90,56 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
     }
   };
 
+  const handleDeleteColumnClick = (columnName: string) => {
+    setDeleteColumnConfirm(columnName);
+  };
+
+  const handleDeleteColumnCancel = () => {
+    setDeleteColumnConfirm(null);
+  };
+
+  const handleDeleteColumnConfirm = async () => {
+    if (!deleteColumnConfirm) return;
+
+    try {
+      await api.deleteColumn(deleteColumnConfirm);
+      setDeleteColumnConfirm(null);
+      onDataChange();
+    } catch (error) {
+      console.error("Error deleting column:", error);
+    }
+  };
+
   return (
     <div className="overflow-x-auto">
       <h2 className="text-2xl font-bold mb-4">Data Table</h2>
+
+      {deleteColumnConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h3 className="text-xl font-semibold mb-4">Confirm Delete</h3>
+            <p className="mb-4">
+              Are you sure you want to delete the column "{deleteColumnConfirm}
+              "? This action cannot be undone and will remove all data in this
+              column.
+            </p>
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={handleDeleteColumnCancel}
+                className="px-4 py-2 border rounded hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteColumnConfirm}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex space-x-4 mb-4">
         <div className="flex-1">
@@ -133,7 +183,16 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
             <th>Name</th>
             <th>Annotation</th>
             {data.columns.map((column) => (
-              <th key={column}>{column}</th>
+              <th key={column} className="relative group">
+                {column}
+                <button
+                  onClick={() => handleDeleteColumnClick(column)}
+                  className="absolute top-0 right-0 text-xs text-red-500 hover:text-red-700 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Delete column"
+                >
+                  ×
+                </button>
+              </th>
             ))}
           </tr>
         </thead>

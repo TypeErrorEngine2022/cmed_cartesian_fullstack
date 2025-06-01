@@ -31,4 +31,8 @@ export const api = {
   ): Promise<void> => {
     await axios.put(`${API_URL}/annotation`, { row_id, annotation });
   },
+
+  deleteColumn: async (column_name: string): Promise<void> => {
+    await axios.delete(`${API_URL}/column/${column_name}`);
+  },
 };

@@ -154,3 +154,33 @@ app.put("/annotation", async (req: Request, res: Response) => {
 
   res.json({ message: "Annotation updated" });
 });
+
+// DELETE /column: Delete a column and its associated attributes
+app.delete("/column/:column_name", async (req: Request, res: Response) => {
+  const { column_name } = req.params;
+
+  const criteriaRepository = AppDataSource.getRepository(Criteria);
+  const attributeRepository = AppDataSource.getRepository(Attribute);
+
+  // Find the column (criteria)
+  const column = await criteriaRepository.findOne({
+    where: { name: column_name },
+  });
+
+  if (!column) {
+    return res.status(404).json({ error: "Column not found" });
+  }
+
+  try {    
+    // First, delete all attributes associated with this column
+    await attributeRepository.delete({ criteria_id: column.id });
+
+    // Then delete the column itself
+    await criteriaRepository.remove(column);
+
+    res.json({ message: "Column deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting column:", error);
+    res.status(500).json({ error: "Failed to delete column" });
+  }
+});
