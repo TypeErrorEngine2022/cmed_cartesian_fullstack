@@ -102,16 +102,40 @@ export const CartesianPlot: React.FC<CartesianPlotProps> = ({
   }, [chartData]);
 
   return (
-    <div className="cartesian-plot-container">
-      <h2 className="text-2xl font-bold mb-4">Cartesian Plot</h2>
-
+    <div className="cartesian-plot-container m-6">
       <ResponsiveContainer width="100%" height={500}>
         <ScatterChart margin={{ top: 20, right: 20, bottom: 40, left: 40 }}>
           <CartesianGrid strokeDasharray="3 3" />
 
-          {/* Reference lines for axes */}
-          <ReferenceLine x={0} stroke="#000" strokeWidth={1.5} />
-          <ReferenceLine y={0} stroke="#000" strokeWidth={1.5} />
+          {/* Reference lines for axes with labels at tips */}
+          <ReferenceLine x={0} stroke="#000" strokeWidth={1.5}>
+            <Label
+              value={`${yPositive}`}
+              position="top"
+              offset={5}
+              style={{ textAnchor: "middle" }}
+            />
+            <Label
+              value={`${yNegative}`}
+              position="bottom"
+              offset={5}
+              style={{ textAnchor: "middle" }}
+            />
+          </ReferenceLine>
+          <ReferenceLine y={0} stroke="#000" strokeWidth={1.5}>
+            <Label
+              value={`${xNegative}`}
+              position="left"
+              offset={5}
+              style={{ textAnchor: "end" }}
+            />
+            <Label
+              value={`${xPositive}`}
+              position="right"
+              offset={5}
+              style={{ textAnchor: "start" }}
+            />
+          </ReferenceLine>
 
           <XAxis
             type="number"
@@ -120,13 +144,7 @@ export const CartesianPlot: React.FC<CartesianPlotProps> = ({
             domain={domains.x}
             tickCount={11}
             axisLine={false}
-          >
-            <Label
-              value={`${xPositive} — ${xNegative}`}
-              position="bottom"
-              offset={20}
-            />
-          </XAxis>
+          />
           <YAxis
             type="number"
             dataKey="y"
@@ -134,15 +152,7 @@ export const CartesianPlot: React.FC<CartesianPlotProps> = ({
             domain={domains.y}
             tickCount={11}
             axisLine={false}
-          >
-            <Label
-              value={`${yPositive} — ${yNegative}`}
-              position="left"
-              angle={-90}
-              offset={25}
-              style={{ textAnchor: "middle" }}
-            />
-          </YAxis>
+          />
 
           <Tooltip content={<CustomTooltip />} />
           <Scatter
