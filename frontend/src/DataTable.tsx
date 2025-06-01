@@ -57,17 +57,29 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
   const handleCellUpdate = async () => {
     if (!editCellInfo) return;
 
-    try {
-      await api.updateCell(
-        editCellInfo.rowName,
-        editCellInfo.columnName,
-        editCellInfo.value
-      );
-      setEditCellInfo(null);
-      onDataChange();
-    } catch (error) {
-      console.error("Error updating cell:", error);
+    // Get the current value from the data structure for comparison
+    const currentRow = data.rows.find(
+      (row) => row.name === editCellInfo.rowName
+    );
+    const currentValue =
+      currentRow?.attributes[editCellInfo.columnName] || "NA";
+
+    // Only update if the value has actually changed
+    if (editCellInfo.value !== currentValue) {
+      try {
+        await api.updateCell(
+          editCellInfo.rowName,
+          editCellInfo.columnName,
+          editCellInfo.value
+        );
+        onDataChange();
+      } catch (error) {
+        console.error("Error updating cell:", error);
+      }
     }
+
+    // Reset edit cell info regardless of whether we updated
+    setEditCellInfo(null);
   };
 
   const handleAnnotationClick = (rowName: string, value: string) => {
