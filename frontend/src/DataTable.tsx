@@ -32,6 +32,13 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
 
   const handleAddColumn = async () => {
     if (!newColumnName.trim()) return;
+    if (data.columns.includes(newColumnName)) {
+      alert(
+        "Column with this name already exists. Please choose a different name."
+      );
+      return;
+    }
+
     try {
       await api.addColumn(newColumnName);
       setNewColumnName("");
@@ -43,6 +50,13 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
 
   const handleAddRow = async () => {
     if (!newRowName.trim()) return;
+    if (data.rows.some((row) => row.name === newRowName)) {
+      alert(
+        "Row with this name already exists. Please choose a different name."
+      );
+      return;
+    }
+
     try {
       await api.addRow(newRowName);
       setNewRowName("");
