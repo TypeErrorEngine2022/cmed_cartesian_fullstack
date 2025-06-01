@@ -220,8 +220,7 @@ export const CartesianPlot: React.FC<CartesianPlotProps> = ({
       <ul>
         {invalidPoints.length > 0 && (
           <li className="text-red-600">
-            <strong>Invalid Points:</strong> Some points could not be plotted
-            due to missing or invalid data.
+            <strong>無效的點：</strong> 部分點由於缺少或無效的數據而無法繪製。
           </li>
         )}
         {invalidPoints.map((row, index) => (

@@ -33,9 +33,7 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
   const handleAddColumn = async () => {
     if (!newColumnName.trim()) return;
     if (data.columns.includes(newColumnName)) {
-      alert(
-        "Column with this name already exists. Please choose a different name."
-      );
+      alert("已存在相同名稱的欄位。請選擇另一個名稱。");
       return;
     }
 
@@ -51,9 +49,7 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
   const handleAddRow = async () => {
     if (!newRowName.trim()) return;
     if (data.rows.some((row) => row.name === newRowName)) {
-      alert(
-        "Row with this name already exists. Please choose a different name."
-      );
+      alert("已存在相同名稱的行。請選擇另一個名稱。");
       return;
     }
 
@@ -223,7 +219,7 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error exporting table:", error);
-      alert("Failed to export data. Please try again.");
+      alert("匯出數據失敗。請重試。");
     }
   };
 
@@ -255,34 +251,30 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
             !importData.data.columns ||
             !importData.data.rows
           ) {
-            setImportError(
-              "Invalid file format. Expected a valid export file."
-            );
+            setImportError("檔案格式無效。請使用有效的匯出檔案。");
             return;
           }
 
           // Confirm before importing
           if (
             window.confirm(
-              "Importing will merge data with existing table. New data with the same row/column names will override existing data. Continue?"
+              "匯入將會將數據與現有表格合併。相同行/欄名稱的新數據將覆蓋現有數據。是否繼續？"
             )
           ) {
             await api.importTable(importData.data);
             onDataChange();
-            alert("Data imported and merged successfully!");
+            alert("數據已成功匯入並合併！");
           }
         } catch (error) {
           console.error("Error parsing import file:", error);
-          setImportError(
-            "Failed to parse the import file. Please ensure it's a valid JSON file."
-          );
+          setImportError("無法解析匯入檔案。請確保它是有效的 JSON 檔案。");
         }
       };
 
       reader.readAsText(file);
     } catch (error) {
       console.error("Error reading import file:", error);
-      setImportError("Failed to read the import file.");
+      setImportError("無法讀取匯入檔案。");
     } finally {
       // Reset file input
       if (fileInputRef.current) {
@@ -321,24 +313,23 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
       {deleteColumnConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-            <h3 className="text-xl font-semibold mb-4">Confirm Delete</h3>
+            <h3 className="text-xl font-semibold mb-4">確認刪除</h3>
             <p className="mb-4">
-              {`Are you sure you want to delete the column "${deleteColumnConfirm}
-              "? This action cannot be undone and will remove all data in this
-              column.`}
+              {`您確定要刪除欄位「${deleteColumnConfirm}
+              」嗎？此操作無法撤銷，並會刪除此欄位中的所有數據。`}
             </p>
             <div className="flex justify-end space-x-2">
               <button
                 onClick={handleDeleteColumnCancel}
                 className="px-4 py-2 border rounded hover:bg-gray-100"
               >
-                Cancel
+                取消
               </button>
               <button
                 onClick={handleDeleteColumnConfirm}
                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
               >
-                Delete
+                刪除
               </button>
             </div>
           </div>
@@ -348,24 +339,23 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
       {deleteRowConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-            <h3 className="text-xl font-semibold mb-4">Confirm Delete</h3>
+            <h3 className="text-xl font-semibold mb-4">確認刪除</h3>
             <p className="mb-4">
-              {`Are you sure you want to delete the row "${deleteRowConfirm}
-              "? This action cannot be undone and will remove all data in this
-              row.`}
+              {`您確定要刪除行「${deleteRowConfirm}
+              」嗎？此操作無法撤銷，並會刪除此行中的所有數據。`}
             </p>
             <div className="flex justify-end space-x-2">
               <button
                 onClick={handleDeleteRowCancel}
                 className="px-4 py-2 border rounded hover:bg-gray-100"
               >
-                Cancel
+                取消
               </button>
               <button
                 onClick={handleDeleteRowConfirm}
                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
               >
-                Delete
+                刪除
               </button>
             </div>
           </div>
