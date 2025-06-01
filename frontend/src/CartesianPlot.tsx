@@ -132,7 +132,7 @@ export const CartesianPlot: React.FC<CartesianPlotProps> = ({
   return (
     <div className="cartesian-plot-container m-6">
       <ResponsiveContainer width="100%" height={500}>
-        <ScatterChart margin={{ top: 20, right: 20, bottom: 40, left: 40 }}>
+        <ScatterChart margin={{ top: 40, right: 50, bottom: 40, left: 50 }}>
           <CartesianGrid strokeDasharray="3 3" />
 
           {/* Reference lines for axes with labels at tips */}
@@ -140,13 +140,13 @@ export const CartesianPlot: React.FC<CartesianPlotProps> = ({
             <Label
               value={`${yPositive}`}
               position="top"
-              offset={5}
+              offset={20}
               style={{ textAnchor: "middle" }}
             />
             <Label
               value={`${yNegative}`}
               position="bottom"
-              offset={5}
+              offset={20}
               style={{ textAnchor: "middle" }}
             />
           </ReferenceLine>
@@ -154,13 +154,13 @@ export const CartesianPlot: React.FC<CartesianPlotProps> = ({
             <Label
               value={`${xNegative}`}
               position="left"
-              offset={5}
+              offset={20}
               style={{ textAnchor: "end" }}
             />
             <Label
               value={`${xPositive}`}
               position="right"
-              offset={5}
+              offset={20}
               style={{ textAnchor: "start" }}
             />
           </ReferenceLine>
