@@ -29,7 +29,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 app.use(
   cors({
-    origin: "http://localhost:5173", // Update with your frontend URL
+    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true, // Important for cookies/authentication
@@ -81,11 +81,21 @@ const authenticate = (req: Request, res: Response, next: NextFunction) => {
 
 // Initialize database connection
 AppDataSource.initialize()
-  .then(() => {
+  .then(async () => {
     console.log("Database connection initialized");
 
+    // Run migrations if in production
+    if (process.env.NODE_ENV === "production") {
+      try {
+        const migrations = await AppDataSource.runMigrations();
+        console.log(`Ran ${migrations.length} migrations successfully`);
+      } catch (error) {
+        console.error("Error running migrations:", error);
+      }
+    }
+
     // Start the server after database is initialized
-    app.listen(PORT, () => console.log("Server running on port 3001"));
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })
   .catch((error) =>
     console.log("Error during database initialization:", error),
