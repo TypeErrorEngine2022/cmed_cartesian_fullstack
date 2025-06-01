@@ -35,4 +35,17 @@ export const api = {
   deleteColumn: async (column_name: string): Promise<void> => {
     await axios.delete(`${API_URL}/column/${column_name}`);
   },
+
+  exportTable: async (): Promise<{
+    data: TableData;
+    timestamp: string;
+    version: string;
+  }> => {
+    const response = await axios.get(`${API_URL}/export`);
+    return response.data;
+  },
+
+  importTable: async (data: TableData): Promise<void> => {
+    await axios.post(`${API_URL}/import`, { data });
+  },
 };

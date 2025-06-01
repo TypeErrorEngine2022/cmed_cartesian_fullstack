@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { TableData } from "./types";
 import { api } from "./api";
 
@@ -22,6 +22,8 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
   const [deleteColumnConfirm, setDeleteColumnConfirm] = useState<string | null>(
     null
   );
+  const [importError, setImportError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddColumn = async () => {
     if (!newColumnName.trim()) return;
@@ -122,6 +124,97 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
     }
   };
 
+  const handleExportTable = async () => {
+    try {
+      const exportData = await api.exportTable();
+
+      // Create a file to download
+      const dataStr = JSON.stringify(exportData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: "application/json" });
+
+      // Create download link and trigger it
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `cartesian-data-${
+        new Date().toISOString().split("T")[0]
+      }.json`;
+      document.body.appendChild(link);
+      link.click();
+
+      // Clean up
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error exporting table:", error);
+      alert("Failed to export data. Please try again.");
+    }
+  };
+
+  const handleImportClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleImportTable = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    setImportError(null);
+
+    if (!file) return;
+
+    try {
+      const reader = new FileReader();
+
+      reader.onload = async (e) => {
+        try {
+          const content = e.target?.result as string;
+          const importData = JSON.parse(content);
+
+          // Validate data structure
+          if (
+            !importData.data ||
+            !importData.data.columns ||
+            !importData.data.rows
+          ) {
+            setImportError(
+              "Invalid file format. Expected a valid export file."
+            );
+            return;
+          }
+
+          // Confirm before importing
+          if (
+            window.confirm(
+              "Importing will merge data with existing table. New data with the same row/column names will override existing data. Continue?"
+            )
+          ) {
+            await api.importTable(importData.data);
+            onDataChange();
+            alert("Data imported and merged successfully!");
+          }
+        } catch (error) {
+          console.error("Error parsing import file:", error);
+          setImportError(
+            "Failed to parse the import file. Please ensure it's a valid JSON file."
+          );
+        }
+      };
+
+      reader.readAsText(file);
+    } catch (error) {
+      console.error("Error reading import file:", error);
+      setImportError("Failed to read the import file.");
+    } finally {
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
   return (
     <div className="overflow-x-auto">
       <h2 className="text-2xl font-bold mb-4">Data Table</h2>
@@ -152,6 +245,37 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
           </div>
         </div>
       )}
+
+      {importError && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <p>{importError}</p>
+        </div>
+      )}
+
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-xl">Manage Table</h3>
+        <div className="flex space-x-2">
+          <button
+            onClick={handleExportTable}
+            className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600"
+          >
+            Export Table
+          </button>
+          <button
+            onClick={handleImportClick}
+            className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600"
+          >
+            Import Table
+          </button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImportTable}
+            accept=".json"
+            className="hidden"
+          />
+        </div>
+      </div>
 
       <div className="flex space-x-4 mb-4">
         <div className="flex-1">
