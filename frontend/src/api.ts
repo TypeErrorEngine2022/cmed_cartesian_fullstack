@@ -1,7 +1,11 @@
 import axios from "axios";
 import { TableData } from "./types";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+// Use runtime config if available (production) or fallback to import.meta.env (development)
+const API_URL =
+  window.RUNTIME_CONFIG?.apiUrl ||
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:3001";
 
 // Configure axios to include credentials with requests
 axios.defaults.withCredentials = true;
