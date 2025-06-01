@@ -221,7 +221,7 @@ app.put("/cell", async (req: Request, res: Response) => {
   });
 
   if (attr) {
-    attr.value = value;
+    attr.value = value || "NA";
     await attributeRepository.save(attr);
     res.json({ message: "Cell updated" });
   } else {
