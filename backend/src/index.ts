@@ -1,23 +1,83 @@
 import express from "express";
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import "reflect-metadata";
 import { AppDataSource } from "./data-source";
 import { Criteria } from "./entity/Criteria";
 import { Formula } from "./entity/Formula";
 import { Attribute } from "./entity/Attribute";
 import cors from "cors";
+import jwt from "jsonwebtoken";
+import cookieParser from "cookie-parser";
+import session from "express-session";
+import dotenv from "dotenv";
+import bcrypt from "bcrypt";
+
+dotenv.config();
+
+// Authentication configuration
+const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
+const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH;
+
+// Define custom interface for session data
+declare module "express-session" {
+  interface SessionData {
+    user?: { username: string };
+  }
+}
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 app.use(
   cors({
-    origin: "*",
+    origin: "http://localhost:5173", // Update with your frontend URL
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true, // Important for cookies/authentication
   }),
 );
 app.use(express.json());
-app.use(express.urlencoded());
+app.use(express.urlencoded({ extended: true }));
+
+// Set CORS headers on all responses to handle preflight requests properly
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
+app.use(cookieParser());
+app.use(
+  session({
+    secret: JWT_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    },
+  }),
+);
+
+// Authentication middleware
+const authenticate = (req: Request, res: Response, next: NextFunction) => {
+  if (req.session.user) {
+    return next();
+  }
+
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { username: string };
+    req.session.user = { username: decoded.username };
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
+};
 
 // Initialize database connection
 AppDataSource.initialize()
@@ -30,6 +90,40 @@ AppDataSource.initialize()
   .catch((error) =>
     console.log("Error during database initialization:", error),
   );
+
+// Authentication Routes
+app.post("/auth/login", async (req: Request, res: Response) => {
+  if (!ADMIN_PASSWORD_HASH) {
+    return res.status(500).json({ error: "Admin password not configured" });
+  }
+
+  const { password } = req.body;
+
+  if (await bcrypt.compare(password, ADMIN_PASSWORD_HASH)) {
+    const token = jwt.sign({ username: "admin" }, JWT_SECRET, { expiresIn: "24h" });
+    req.session.user = { username: "admin" };
+    res.json({ success: true, token, username: "admin" });
+  } else {
+    res.status(401).json({ error: "Invalid username or password" });
+  }
+});
+
+app.post("/auth/logout", (req: Request, res: Response) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ error: "Failed to logout" });
+    }
+    res.clearCookie("connect.sid");
+    res.json({ success: true });
+  });
+});
+
+app.get("/auth/verify", authenticate, (req: Request, res: Response) => {
+  res.json({ authenticated: true, username: req.session.user?.username });
+});
+
+// Protected Routes - Apply authentication middleware
+app.use(authenticate);
 
 // GET /table: Retrieve table data
 app.get("/table", async (req: Request, res: Response) => {

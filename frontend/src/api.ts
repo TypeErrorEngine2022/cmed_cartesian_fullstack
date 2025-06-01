@@ -3,6 +3,15 @@ import { TableData } from "./types";
 
 const API_URL = "http://localhost:3001";
 
+// Configure axios to include credentials with requests
+axios.defaults.withCredentials = true;
+
+// Check if we have a token in local storage and set it in axios headers
+const token = localStorage.getItem("authToken");
+if (token) {
+  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+}
+
 export const api = {
   getTableData: async (): Promise<TableData> => {
     const response = await axios.get(`${API_URL}/table`);

@@ -4,8 +4,10 @@ import { CartesianPlot } from "./CartesianPlot";
 import { AxisSelector } from "./AxisSelector";
 import { api } from "./api";
 import { TableData, CartesianSettings } from "./types";
+import { useAuth } from "./AuthContext";
 
 function App() {
+  const { logout } = useAuth();
   const [tableData, setTableData] = useState<TableData>({
     columns: [],
     rows: [],
@@ -60,18 +62,23 @@ function App() {
   }, []);
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Coordinate Analysis Tool</h1>
+    <div className="container mx-auto px-4 py-8">
+      <header className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold">CMED Cartesian Plot</h1>
+        <div className="flex items-center gap-4">
+          <span>Welcome, chub</span>
+          <button
+            onClick={logout}
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Logout
+          </button>
+        </div>
+      </header>
 
       {error && (
-        <div className="bg-red-100 text-red-700 p-4 rounded mb-6">
+        <div className="mb-4 p-4 bg-red-50 border border-red-500 rounded text-red-700">
           {error}
-          <button
-            onClick={fetchData}
-            className="ml-4 bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
-          >
-            Retry
-          </button>
         </div>
       )}
 
