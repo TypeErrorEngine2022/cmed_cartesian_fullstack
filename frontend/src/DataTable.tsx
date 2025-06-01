@@ -72,7 +72,7 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
       currentRow?.attributes[editCellInfo.columnName] || "NA";
 
     // Only update if the value has actually changed
-    if (editCellInfo.value !== currentValue) {
+    if (editCellInfo.value && editCellInfo.value !== currentValue) {
       try {
         await api.updateCell(
           editCellInfo.rowName,
@@ -97,15 +97,25 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
   const handleAnnotationUpdate = async () => {
     if (!editAnnotationInfo) return;
 
-    try {
-      await api.updateAnnotation(
-        editAnnotationInfo.rowName,
-        editAnnotationInfo.value
-      );
+    const currentRow = data.rows.find(
+      (row) => row.name === editAnnotationInfo.rowName
+    );
+    const currentValue = currentRow?.annotation || "";
+
+    if (editAnnotationInfo.value && editAnnotationInfo.value !== currentValue) {
+      try {
+        await api.updateAnnotation(
+          editAnnotationInfo.rowName,
+          editAnnotationInfo.value
+        );
+        setEditAnnotationInfo(null);
+        onDataChange();
+      } catch (error) {
+        console.error("Error updating annotation:", error);
+      }
+    } else {
+      // If the value hasn't changed, just reset the edit state
       setEditAnnotationInfo(null);
-      onDataChange();
-    } catch (error) {
-      console.error("Error updating annotation:", error);
     }
   };
 
@@ -122,7 +132,7 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
     );
     const currentValue = currentRow?.name || "NA";
 
-    if (editRowNameInfo.value !== currentValue) {
+    if (editRowNameInfo.value && editRowNameInfo.value !== currentValue) {
       try {
         await api.updateRowName(editRowNameInfo.rowName, editRowNameInfo.value);
         setEditRowNameInfo(null);
@@ -475,7 +485,7 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
                     />
                   </div>
                 ) : (
-                  row.annotation || "—"
+                  row.annotation || ""
                 )}
               </td>
               {data.columns.map((column) => (
