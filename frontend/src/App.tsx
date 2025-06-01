@@ -61,9 +61,7 @@ function App() {
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">
-        Cartesian Coordinate Analysis Tool
-      </h1>
+      <h1 className="text-3xl font-bold mb-6">Coordinate Analysis Tool</h1>
 
       {error && (
         <div className="bg-red-100 text-red-700 p-4 rounded mb-6">
