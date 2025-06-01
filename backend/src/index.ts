@@ -100,7 +100,9 @@ app.post("/auth/login", async (req: Request, res: Response) => {
   const { password } = req.body;
 
   if (await bcrypt.compare(password, ADMIN_PASSWORD_HASH)) {
-    const token = jwt.sign({ username: "admin" }, JWT_SECRET, { expiresIn: "24h" });
+    const token = jwt.sign({ username: "admin" }, JWT_SECRET, {
+      expiresIn: "24h",
+    });
     req.session.user = { username: "admin" };
     res.json({ success: true, token, username: "admin" });
   } else {
@@ -247,6 +249,36 @@ app.put("/annotation", async (req: Request, res: Response) => {
   await formulaRepository.save(row);
 
   res.json({ message: "Annotation updated" });
+});
+
+// DELETE /row/:row_name: Delete a row (formula) and its associated attributes
+app.delete("/row/:row_name", async (req: Request, res: Response) => {
+  const { row_name } = req.params;
+
+  const formulaRepository = AppDataSource.getRepository(Formula);
+  const attributeRepository = AppDataSource.getRepository(Attribute);
+
+  // Find the row (formula)
+  const row = await formulaRepository.findOne({
+    where: { name: row_name },
+  });
+
+  if (!row) {
+    return res.status(404).json({ error: "Row not found" });
+  }
+
+  try {
+    // First, delete all attributes associated with this row
+    await attributeRepository.delete({ formula_id: row.id });
+
+    // Then delete the row itself
+    await formulaRepository.remove(row);
+
+    res.json({ message: "Row deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting row:", error);
+    res.status(500).json({ error: "Failed to delete row" });
+  }
 });
 
 // DELETE /column: Delete a column and its associated attributes

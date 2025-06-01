@@ -45,6 +45,10 @@ export const api = {
     await axios.delete(`${API_URL}/column/${column_name}`);
   },
 
+  deleteRow: async (row_name: string): Promise<void> => {
+    await axios.delete(`${API_URL}/row/${row_name}`);
+  },
+
   exportTable: async (): Promise<{
     data: TableData;
     timestamp: string;

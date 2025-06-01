@@ -22,6 +22,7 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
   const [deleteColumnConfirm, setDeleteColumnConfirm] = useState<string | null>(
     null
   );
+  const [deleteRowConfirm, setDeleteRowConfirm] = useState<string | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -118,6 +119,26 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
     try {
       await api.deleteColumn(deleteColumnConfirm);
       setDeleteColumnConfirm(null);
+      onDataChange();
+    } catch (error) {
+      console.error("Error deleting column:", error);
+    }
+  };
+
+  const handleDeleteRowClick = (rowName: string) => {
+    setDeleteRowConfirm(rowName);
+  };
+
+  const handleDeleteRowCancel = () => {
+    setDeleteRowConfirm(null);
+  };
+
+  const handleDeleteRowConfirm = async () => {
+    if (!deleteRowConfirm) return;
+
+    try {
+      await api.deleteRow(deleteRowConfirm);
+      setDeleteRowConfirm(null);
       onDataChange();
     } catch (error) {
       console.error("Error deleting column:", error);
@@ -247,9 +268,9 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
             <h3 className="text-xl font-semibold mb-4">Confirm Delete</h3>
             <p className="mb-4">
-              Are you sure you want to delete the column "{deleteColumnConfirm}
+              {`Are you sure you want to delete the column "${deleteColumnConfirm}
               "? This action cannot be undone and will remove all data in this
-              column.
+              column.`}
             </p>
             <div className="flex justify-end space-x-2">
               <button
@@ -260,6 +281,33 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
               </button>
               <button
                 onClick={handleDeleteColumnConfirm}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteRowConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h3 className="text-xl font-semibold mb-4">Confirm Delete</h3>
+            <p className="mb-4">
+              {`Are you sure you want to delete the row "${deleteRowConfirm}
+              "? This action cannot be undone and will remove all data in this
+              row.`}
+            </p>
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={handleDeleteRowCancel}
+                className="px-4 py-2 border rounded hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteRowConfirm}
                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
               >
                 Delete
@@ -333,7 +381,16 @@ export const DataTable: React.FC<DataTableProps> = ({ data, onDataChange }) => {
         <tbody>
           {data.rows.map((row) => (
             <tr key={row.name}>
-              <td>{row.name}</td>
+              <td className="relative group">
+                {row.name}
+                <button
+                  onClick={() => handleDeleteRowClick(row.name)}
+                  className="absolute cursor-pointer  top-0 right-0 text-xs text-red-500 hover:text-red-700 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Delete column"
+                >
+                  ×
+                </button>
+              </td>
               <td
                 onClick={() => handleAnnotationClick(row.name, row.annotation)}
                 className="cursor-pointer"
