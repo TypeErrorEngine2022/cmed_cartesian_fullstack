@@ -7,12 +7,12 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const AppDataSource = new DataSource({
-  type: process.env.DB_TYPE as "mysql",
+  type: "postgres",
   host: process.env.DB_HOST || "localhost",
-  port: parseInt(process.env.DB_PORT || "3306"),
-  username: process.env.DB_USERNAME || "test",
-  password: process.env.DB_PASSWORD || "test",
-  database: process.env.DB_DATABASE || "test",
+  port: parseInt(process.env.DB_PORT || "5432"),
+  username: process.env.DB_USERNAME || "postgres",
+  password: process.env.DB_PASSWORD || "postgres",
+  database: process.env.DB_DATABASE || "cartesian",
   synchronize: true,
   logging: true,
   entities: [Formula, Criteria, Attribute],
