@@ -27,6 +27,10 @@ declare module "express-session" {
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Create API Router to handle /api prefix for Vercel deployment
+const apiRouter = express.Router();
+
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN || "http://localhost:5173",
@@ -94,6 +98,9 @@ AppDataSource.initialize()
       }
     }
 
+    // Mount the API router with the /api prefix
+    app.use("/api", apiRouter);
+
     // Start the server after database is initialized
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })
@@ -102,7 +109,7 @@ AppDataSource.initialize()
   );
 
 // Authentication Routes
-app.post("/auth/login", async (req: Request, res: Response) => {
+apiRouter.post("/auth/login", async (req: Request, res: Response) => {
   if (!ADMIN_PASSWORD_HASH) {
     return res.status(500).json({ error: "Admin password not configured" });
   }
@@ -120,7 +127,7 @@ app.post("/auth/login", async (req: Request, res: Response) => {
   }
 });
 
-app.post("/auth/logout", (req: Request, res: Response) => {
+apiRouter.post("/auth/logout", (req: Request, res: Response) => {
   req.session.destroy((err) => {
     if (err) {
       return res.status(500).json({ error: "Failed to logout" });
@@ -130,15 +137,15 @@ app.post("/auth/logout", (req: Request, res: Response) => {
   });
 });
 
-app.get("/auth/verify", authenticate, (req: Request, res: Response) => {
+apiRouter.get("/auth/verify", authenticate, (req: Request, res: Response) => {
   res.json({ authenticated: true, username: req.session.user?.username });
 });
 
 // Protected Routes - Apply authentication middleware
-app.use(authenticate);
+apiRouter.use(authenticate);
 
 // GET /table: Retrieve table data
-app.get("/table", async (req: Request, res: Response) => {
+apiRouter.get("/table", async (req: Request, res: Response) => {
   const criteriaRepository = AppDataSource.getRepository(Criteria);
   const formulaRepository = AppDataSource.getRepository(Formula);
 
@@ -162,7 +169,7 @@ app.get("/table", async (req: Request, res: Response) => {
 });
 
 // POST /column: Add a new column
-app.post("/column", async (req: Request, res: Response) => {
+apiRouter.post("/column", async (req: Request, res: Response) => {
   const { column_name } = req.body;
   if (!column_name)
     return res.status(400).json({ error: "Criteria name required" });
@@ -187,7 +194,7 @@ app.post("/column", async (req: Request, res: Response) => {
 });
 
 // POST /row: Add a new row
-app.post("/row", async (req: Request, res: Response) => {
+apiRouter.post("/row", async (req: Request, res: Response) => {
   const { name } = req.body;
   if (!name) return res.status(400).json({ error: "Formula name required" });
 
@@ -211,7 +218,7 @@ app.post("/row", async (req: Request, res: Response) => {
 });
 
 // PUT /cell: Update a cell value
-app.put("/cell", async (req: Request, res: Response) => {
+apiRouter.put("/cell", async (req: Request, res: Response) => {
   const { row_id, column_name, value } = req.body;
 
   const criteriaRepository = AppDataSource.getRepository(Criteria);
@@ -246,7 +253,7 @@ app.put("/cell", async (req: Request, res: Response) => {
 });
 
 // PUT /annotation: Update a row's annotation
-app.put("/annotation", async (req: Request, res: Response) => {
+apiRouter.put("/annotation", async (req: Request, res: Response) => {
   const { row_id, annotation } = req.body;
 
   const formulaRepository = AppDataSource.getRepository(Formula);
@@ -262,7 +269,7 @@ app.put("/annotation", async (req: Request, res: Response) => {
 });
 
 // PUT /row/:row_name: Update the row name of a row
-app.put("/row/:row_name/name", async (req: Request, res: Response) => {
+apiRouter.put("/row/:row_name/name", async (req: Request, res: Response) => {
   const { row_name } = req.params;
   const { new_name } = req.body;
   if (!new_name) return res.status(400).json({ error: "New name required" });
@@ -277,7 +284,7 @@ app.put("/row/:row_name/name", async (req: Request, res: Response) => {
 });
 
 // DELETE /row/:row_name: Delete a row (formula) and its associated attributes
-app.delete("/row/:row_name", async (req: Request, res: Response) => {
+apiRouter.delete("/row/:row_name", async (req: Request, res: Response) => {
   const { row_name } = req.params;
 
   const formulaRepository = AppDataSource.getRepository(Formula);
@@ -307,37 +314,40 @@ app.delete("/row/:row_name", async (req: Request, res: Response) => {
 });
 
 // DELETE /column: Delete a column and its associated attributes
-app.delete("/column/:column_name", async (req: Request, res: Response) => {
-  const { column_name } = req.params;
+apiRouter.delete(
+  "/column/:column_name",
+  async (req: Request, res: Response) => {
+    const { column_name } = req.params;
 
-  const criteriaRepository = AppDataSource.getRepository(Criteria);
-  const attributeRepository = AppDataSource.getRepository(Attribute);
+    const criteriaRepository = AppDataSource.getRepository(Criteria);
+    const attributeRepository = AppDataSource.getRepository(Attribute);
 
-  // Find the column (criteria)
-  const column = await criteriaRepository.findOne({
-    where: { name: column_name },
-  });
+    // Find the column (criteria)
+    const column = await criteriaRepository.findOne({
+      where: { name: column_name },
+    });
 
-  if (!column) {
-    return res.status(404).json({ error: "Column not found" });
-  }
+    if (!column) {
+      return res.status(404).json({ error: "Column not found" });
+    }
 
-  try {
-    // First, delete all attributes associated with this column
-    await attributeRepository.delete({ criteria_id: column.id });
+    try {
+      // First, delete all attributes associated with this column
+      await attributeRepository.delete({ criteria_id: column.id });
 
-    // Then delete the column itself
-    await criteriaRepository.remove(column);
+      // Then delete the column itself
+      await criteriaRepository.remove(column);
 
-    res.json({ message: "Column deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting column:", error);
-    res.status(500).json({ error: "Failed to delete column" });
-  }
-});
+      res.json({ message: "Column deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting column:", error);
+      res.status(500).json({ error: "Failed to delete column" });
+    }
+  },
+);
 
 // Export table data
-app.get("/export", async (req: Request, res: Response) => {
+apiRouter.get("/export", async (req: Request, res: Response) => {
   try {
     const criteriaRepository = AppDataSource.getRepository(Criteria);
     const formulaRepository = AppDataSource.getRepository(Formula);
@@ -371,7 +381,7 @@ app.get("/export", async (req: Request, res: Response) => {
 });
 
 // Import table data
-app.post("/import", async (req: Request, res: Response) => {
+apiRouter.post("/import", async (req: Request, res: Response) => {
   try {
     const { data } = req.body;
 
