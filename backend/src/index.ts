@@ -98,8 +98,8 @@ AppDataSource.initialize()
       }
     }
 
-    // Mount the API router with the /api prefix
-    app.use("/api", apiRouter);
+    // Mount the API router with the / prefix
+    app.use("/", apiRouter);
 
     // Start the server after database is initialized
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
