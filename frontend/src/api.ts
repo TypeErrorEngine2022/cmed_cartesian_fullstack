@@ -2,10 +2,16 @@ import axios from "axios";
 import { TableData } from "./types";
 
 // Use runtime config if available (production) or fallback to import.meta.env (development)
-const API_URL =
+const BASE_URL =
   window.RUNTIME_CONFIG?.apiUrl ||
   import.meta.env.VITE_API_URL ||
   "http://localhost:3001";
+
+// In production, prepend /api to the path, in development use the base URL as is
+const isProduction =
+  process.env.NODE_ENV === "production" ||
+  (!process.env.NODE_ENV && window.location.hostname !== "localhost");
+const API_URL = isProduction ? "/api" : BASE_URL;
 
 // Configure axios to include credentials with requests
 axios.defaults.withCredentials = true;
