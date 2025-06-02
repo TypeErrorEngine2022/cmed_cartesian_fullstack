@@ -7,7 +7,7 @@ import {
 } from "react";
 import axios from "axios";
 
-const API_URL = "http://localhost:3001";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
 // Configure axios to send cookies with requests
 axios.defaults.withCredentials = true;
@@ -48,9 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     checkAuthStatus();
   }, []);
 
-  const login = async (
-    password: string
-  ): Promise<boolean> => {
+  const login = async (password: string): Promise<boolean> => {
     try {
       const response = await axios.post(`${API_URL}/auth/login`, {
         password,
@@ -80,9 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider
-      value={{ isAuthenticated, login, logout, loading }}
-    >
+    <AuthContext.Provider value={{ isAuthenticated, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

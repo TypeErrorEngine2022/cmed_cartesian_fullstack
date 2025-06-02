@@ -16,7 +16,7 @@ export const LoginPage = () => {
     try {
       const success = await login(password);
       if (!success) {
-        setError("Invalid username or password");
+        setError("Invalid password");
       }
     } catch (err) {
       setError("An error occurred during login");
